@@ -1,5 +1,13 @@
 package jm.task.core.jdbc.util;
 
+import jm.task.core.jdbc.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -11,20 +19,39 @@ import java.sql.SQLException;
  */
 
 public class Util {
-    // JDBC URL, имя пользователя и пароль для подключения к базе данных
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/testDB";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "root";
+//    private static final SessionFactory SESSION_FACTORY;
+//
+//    static {
+//        try {
+//            // Загружаем конфигурацию Hibernate из hibernate.cfg.xml
+//            SESSION_FACTORY = new Configuration().configure().addAnnotatedClass(User.class).buildSessionFactory();
+//        } catch (Exception ex) {
+//            System.err.println("Initial SessionFactory creation failed." + ex);
+//            throw new ExceptionInInitializerError(ex);
+//        }
+//    }
 
-    // Метод для установки соединения с базой данных
-    public static Connection getConnection() throws SQLException {
-        try  {
-            Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-            return connection;
-        } catch (SQLException e) {
-            System.err.println("Не удалось установить соединение с базой данных.");
-            throw e; // Пробрасываем исключение дальше
+    public static Session getSession() {
+        return SESSION_FACTORY.openSession();
+    }
+
+    private static final SessionFactory SESSION_FACTORY;
+
+    static {
+        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure() // Загружаем конфигурацию Hibernate из hibernate.cfg.xml
+                .build();
+        try {
+            SESSION_FACTORY = new MetadataSources(registry)
+//                    .addAnnotatedClass(User.class)
+                    .buildMetadata()
+                    .buildSessionFactory();
+        } catch (Exception ex) {
+            StandardServiceRegistryBuilder.destroy(registry);
+            System.err.println("Initial SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
+
     }
 }
 
